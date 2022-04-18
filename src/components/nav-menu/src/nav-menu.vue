@@ -5,7 +5,7 @@
       <span v-if="!collapse" class="title">Vue3+TS</span>
     </div>
     <el-menu
-      default-active="2"
+      :default-active="defaultValue"
       class="el-menu-vertical-demo"
       background-color="#001529"
       :collapse="collapse"
@@ -15,7 +15,7 @@
       <template v-for="item in userMeuns" :key="item.id">
         <!-- 二级菜单的判断 -->
         <template v-if="item.type === 1">
-          <el-sub-menu :index="item.id">
+          <el-sub-menu :index="item.id + ''">
             <template #title>
               <el-icon><milk-tea /></el-icon>
               <span>{{ item.name }}</span>
@@ -23,7 +23,7 @@
             <!-- 二级菜单可以展开的判断 -->
             <template v-for="subItem in item.children" :key="subItem.id">
               <el-menu-item
-                :index="subItem.id"
+                :index="subItem.id + ''"
                 @click="handleSubitemClick(subItem)"
               >
                 <i v-if="subItem.icon" :class="subItem.icon"></i>
@@ -34,7 +34,7 @@
         </template>
         <!-- 一级菜单的判断 -->
         <template v-else-if="item.type === 2">
-          <el-menu-item :index="item.id">
+          <el-menu-item :index="item.id + ''">
             <i :class="item.icon"></i>
             <span>{{ item.name }}</span>
           </el-menu-item>
@@ -44,10 +44,11 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref } from 'vue'
 import { useStore } from '@/store/index'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { MenusRaw } from '@/util/map-menus'
+import { pathMapToMenu } from '@/util/map-menus'
 export default defineComponent({
   props: {
     collapse: {
@@ -57,8 +58,20 @@ export default defineComponent({
   },
   setup() {
     const store = useStore()
+
     const userMeuns = computed(() => store.state.login.userMenus)
+
     const router = useRouter()
+    const route = useRoute()
+
+    const currentPath = route.path
+
+    // 处理当刷新之后 这里defaultValue 不可以写死 应该是用户刷新哪个页面就是哪个页面
+    // 那么就要获取到当前的页面的id
+    // 所以就要使用pathMapToMenus这个方法来获取当前路径对应的id
+    const menu = pathMapToMenu(store.state.login.userMenus, currentPath)
+    const defaultValue = ref(menu.id + '')
+
     const handleSubitemClick = (item: MenusRaw) => {
       router.push({
         path: item.url
@@ -66,6 +79,7 @@ export default defineComponent({
     }
     return {
       userMeuns,
+      defaultValue,
       handleSubitemClick
     }
   }
