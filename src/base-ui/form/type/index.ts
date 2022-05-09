@@ -1,7 +1,7 @@
 type IFormType = 'input' | 'password' | 'select' | 'datepicker'
 type IOptions = {
   title: string
-  value: string
+  value: number | string
 }
 export interface IFormItem {
   field: string
@@ -11,9 +11,11 @@ export interface IFormItem {
   placehold?: string
   options?: IOptions[]
   otherOptions?: any
+  isHide?: boolean
 }
 
 export interface IForm {
+  title?: string
   formItems: IFormItem[]
   labelWidth?: string
   itemStyle: any

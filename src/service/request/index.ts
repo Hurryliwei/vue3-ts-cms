@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { AxiosInstance } from 'axios'
 import { HYRequestInterceptors, HYRequestConfig } from './type'
-import { ElLoading } from 'element-plus'
+import { ElLoading, ElMessage } from 'element-plus'
 import type { LoadingInstance } from 'element-plus/es/components/loading/src/loading'
 
 class HYRequest {
@@ -60,8 +60,12 @@ class HYRequest {
         this.loading?.close()
 
         const data = res.data
-        if (data.returnCode === '-1001') {
-          console.log('服务器错误')
+        if (data.code !== 0) {
+          ElMessage({
+            message: data.data,
+            type: 'warning'
+          })
+          return
         }
 
         return res.data
@@ -107,6 +111,9 @@ class HYRequest {
   }
   delete<T>(config: HYRequestConfig<T>): Promise<T> {
     return this.request<T>({ ...config, method: 'delete' })
+  }
+  patch<T>(config: HYRequestConfig<T>): Promise<T> {
+    return this.request<T>({ ...config, method: 'patch' })
   }
 }
 export default HYRequest

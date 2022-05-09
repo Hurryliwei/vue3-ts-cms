@@ -7,7 +7,8 @@ export interface MenusRaw {
   sort: number
   url: string
   icon: string
-  children: MenusRaw[]
+  permission: string
+  children: any[]
 }
 
 let firstMenu: any = null
@@ -93,4 +94,39 @@ export function pathMapBreadcrumb(
   return breadcrumbs
 }
 
+export function mapMenusToPermission(userMenus: any[]) {
+  const permissions: string[] = []
+
+  const _resurseGetPermission = (menus: any[]) => {
+    for (const menu of menus) {
+      if (menu.type === 3) {
+        permissions.push(menu.permission)
+      } else {
+        _resurseGetPermission(menu.children ?? [])
+      }
+    }
+  }
+
+  _resurseGetPermission(userMenus)
+
+  return permissions
+}
+
+export function getMenuLeafKeys(menuList: any[]) {
+  const leafKeys: number[] = []
+
+  const _resurseGetLeaf = (menuList: any[]) => {
+    for (const menu of menuList) {
+      if (menu.children) {
+        _resurseGetLeaf(menu.children)
+      } else {
+        leafKeys.push(menu.id)
+      }
+    }
+  }
+
+  _resurseGetLeaf(menuList)
+
+  return leafKeys
+}
 export { firstMenu }

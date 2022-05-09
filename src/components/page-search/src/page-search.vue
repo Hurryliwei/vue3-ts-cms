@@ -6,8 +6,8 @@
       </template>
       <template #footer>
         <div class="handle-btn">
-          <el-button type="primary">重置</el-button>
-          <el-button type="primary">搜索</el-button>
+          <el-button type="primary" @click="handleResetClick">重置</el-button>
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
         </div>
       </template>
     </hy-from>
@@ -27,16 +27,31 @@ export default defineComponent({
       require: true
     }
   },
-  setup() {
-    const formData = ref({
-      id: '',
-      name: '',
-      sport: '',
-      password: '',
-      createTime: ''
-    })
+  emits: ['resetBtnClick', 'queryBtnClick'],
+  setup(props, { emit }) {
+    const formItems = props.searchFormConfig?.formItems ?? []
+    const formOriginData: any = {}
+    for (const item of formItems) {
+      formOriginData[item.field] = ''
+    }
+    const formData = ref(formOriginData)
+
+    const handleResetClick = () => {
+      for (const key in formOriginData) {
+        formData.value[key] = formOriginData[key]
+        /* formData.value[`${key}`] = formOriginData[key] **/
+      }
+      emit('resetBtnClick')
+    }
+
+    const handleSearch = () => {
+      console.log('点击了搜索')
+      emit('queryBtnClick', formData.value)
+    }
     return {
-      formData
+      formData,
+      handleResetClick,
+      handleSearch
     }
   }
 })

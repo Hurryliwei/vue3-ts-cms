@@ -9,7 +9,7 @@ import { ILoginState } from './loginType'
 import { IRootState } from '../storeType'
 import localCache from '@/util/cache'
 import router from '@/router/index'
-import { mapMenusToRoutes } from '@/util/map-menus'
+import { mapMenusToRoutes, mapMenusToPermission } from '@/util/map-menus'
 const loginModule: Module<ILoginState, IRootState> = {
   namespaced: true,
 
@@ -17,7 +17,8 @@ const loginModule: Module<ILoginState, IRootState> = {
     return {
       token: '',
       userInfo: '',
-      userMenus: ''
+      userMenus: '',
+      permissions: []
     }
   },
 
@@ -33,19 +34,27 @@ const loginModule: Module<ILoginState, IRootState> = {
 
       const routes = mapMenusToRoutes(userMenus)
 
+      console.log('注册动态路由')
+
       routes.forEach((routeItem) => {
         router.addRoute('main', routeItem)
       })
+
+      // 获取用户的权限
+      const permission = mapMenusToPermission(userMenus)
+      state.permissions = permission
     }
   },
 
   actions: {
-    async accountLoginAction({ commit }, payload: any) {
+    async accountLoginAction({ commit, dispatch }, payload: any) {
       // 通过登录 先来获取Token
       const loginResult = await accountLoginRequest(payload)
       const { id, token } = loginResult.data
       commit('changeToken', token)
       localCache.setCache('token', token)
+
+      dispatch('getInitialDataAction', null, { root: true }) //初始化信息
 
       // 拿到token就可以做别的事情了
       // 1.先获取用户信息
@@ -62,10 +71,11 @@ const loginModule: Module<ILoginState, IRootState> = {
       // 3.跳转main
       router.push('main')
     },
-    loadLocalLogin({ commit }) {
+    loadLocalLogin({ commit, dispatch }) {
       const token = localCache.getCache('token')
       if (token) {
         commit('changeToken', token)
+        dispatch('getInitialDataAction', null, { root: true })
       }
       const userInfo = localCache.getCache('userInfo')
       if (userInfo) {

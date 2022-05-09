@@ -3,11 +3,16 @@
     <div class="header">
       <slot name="header"> </slot>
     </div>
-    <el-form label-width="80px">
+    <el-form :label-width="labelWidth">
       <el-row>
         <template v-for="item in formItems" :key="item.label">
           <el-col v-bind="colLayout">
-            <el-form-item :label="item.label" :style="itemStyle">
+            <el-form-item
+              :label="item.label"
+              :style="itemStyle"
+              :rules="item.rules"
+              v-if="!item.isHide"
+            >
               <template
                 v-if="item.type === 'input' || item.type === 'password'"
               >
@@ -86,6 +91,10 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
+    // 1.用双向绑定来处理这个问题 在传值的时候 要改变属性的值 而不时改变整体对象的值
+    // 用父组件传值的时候 进行处理
+
+    // 2.第二个办法 手写一个双向绑定 用原生的modal-value 绑定modelvalue 然后写一个监听更新函数 然后触发emit 传递给父组件 来控制数据的变化
     const formData = ref({ ...props.modelValue })
     watch(
       formData,
